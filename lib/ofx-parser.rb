@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'hpricot'
 require 'time'
 require 'date'
@@ -56,10 +55,10 @@ module OfxParser
     # Returns a DateTime object. Milliseconds (XXX) are ignored.
     def self.parse_datetime(date)
       if /\A\s*
-          (\d{4})(\d{2})(\d{2})           ?# YYYYMMDD            1,2,3
-          (?:(\d{2})(\d{2})(\d{2}))?      ?# HHMMSS  - optional  4,5,6
-          (?:\.(\d{3}))?                  ?# .XXX    - optional  7
-          (?:\[([-+]?[\.\d]+)\:\w{3}\])?  ?# [-n:TZ] - optional  8,9
+          (\d{4})(\d{2})(\d{2})       ?# YYYYMMDD            1,2,3
+          (?:(\d{2})(\d{2})(\d{2}))?  ?# HHMMSS  - optional  4,5,6
+          (?:\.(\d{3}))?              ?# .XXX    - optional  7
+          (?:\[(-?\d+)\:\w{3}\])?     ?# [-n:TZ] - optional  8,9
           \s*\z/ix =~ date
         year = $1.to_i
         mon = $2.to_i
@@ -84,7 +83,13 @@ module OfxParser
       ofx.sign_on = build_signon((doc/"SIGNONMSGSRSV1/SONRS"))
       ofx.signup_account_info = build_info((doc/"SIGNUPMSGSRSV1/ACCTINFOTRNRS"))
       ofx.bank_account = build_bank((doc/"BANKMSGSRSV1/STMTTRNRS")) unless (doc/"BANKMSGSRSV1").empty?
-      ofx.credit_card = build_credit((doc/"CREDITCARDMSGSRSV1/CCSTMTTRNRS")) unless (doc/"CREDITCARDMSGSRSV1").empty?
+      
+      ofx.credit_cards = []
+      unless (doc/"CREDITCARDMSGSRSV1").empty?
+        (doc/"CREDITCARDMSGSRSV1/CCSTMTTRNRS").each do |card|
+          ofx.credit_cards << build_credit(card)
+        end
+      end
       #build_investment((doc/"SIGNONMSGSRQV1"))
 
       ofx

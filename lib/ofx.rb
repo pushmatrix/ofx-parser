@@ -48,11 +48,11 @@ module OfxParser
   # * language is defined by iso639 3-letter code
   class Ofx
     attr_accessor :header, :sign_on, :signup_account_info,
-                  :bank_account, :credit_card, :investment
+                  :bank_account, :credit_cards, :investment
 
     def accounts
       accounts = []
-      [:bank_account, :credit_card, :investment].each do |method|
+      [:bank_account, :credit_cards, :investment].each do |method|
         val = send(method)
         accounts << val if val
       end
@@ -69,12 +69,12 @@ module OfxParser
   end
 
   class Account
-    attr_accessor :number, :statement, :transaction_uid, :routing_number
+    attr_accessor :number, :statement, :transaction_uid
   end
 
   class BankAccount < Account
     TYPE = [:CHECKING, :SAVINGS, :MONEYMRKT, :CREDITLINE]
-    attr_accessor :type, :balance, :balance_date
+    attr_accessor :routing_number, :type, :balance, :balance_date
 
     include MonetarySupport
     monetary_vars :balance
